@@ -4,6 +4,16 @@ Browse your generated images and videos, inspect their embedded metadata, and se
 
 Works with **both images and videos** that contain WanGP generation metadata.
 
+## Screenshots
+
+Browse your outputs in a thumbnail grid and inspect generation metadata for any selected file:
+
+![Prompt Manager grid view](screens/001.png)
+
+Click any metadata row to send that value to the Media Generator, or load the full recipe with one button:
+
+![Clickable metadata panel](screens/002.png)
+
 ## Features
 
 - Grid view of outputs from your configured save folders (with folder navigation)
@@ -34,7 +44,7 @@ Partial field clicks apply to your **current** model. Clicking **Model** switche
 2. Under **Install New Plugin**, paste this repository URL:
 
    ```
-   https://github.com/davidbrum/wan2gp-prompt-manager
+   https://github.com/davidbrum25/wan2gp-prompt-manager
    ```
 
 3. Click **Download and Install Plugin**.
@@ -47,7 +57,7 @@ Partial field clicks apply to your **current** model. Clicking **Model** switche
 
    ```bash
    cd /path/to/Wan2GP/plugins
-   git clone https://github.com/davidbrum/wan2gp-prompt-manager.git
+   git clone https://github.com/davidbrum25/wan2gp-prompt-manager.git
    ```
 
 2. Enable `wan2gp-prompt-manager` in **Plugins** → save settings → restart Wan2GP.
