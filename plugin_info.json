@@ -1,8 +1,8 @@
 {
   "name": "Prompt Manager",
   "author": "David Brum",
-  "version": "1.0.0",
-  "description": "Browse generated images and videos, then click individual metadata fields (prompt, seed, resolution, steps, CFG, LoRAs, model) or load all settings into the generator.",
+  "version": "1.3.0",
+  "description": "Browse generated images and videos with search, sort, and grid size controls. Copy metadata, generate in-plugin, manage a saved library with export/import, and bulk actions on multi-select.",
   "type": ["app"],
   "date": "2026-06-29",
   "wan2gp_version": "",
