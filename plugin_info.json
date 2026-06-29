@@ -1,0 +1,10 @@
+{
+  "name": "Prompt Manager",
+  "author": "David Brum",
+  "version": "1.0.0",
+  "description": "Browse generated images and videos, then click individual metadata fields (prompt, seed, resolution, steps, CFG, LoRAs, model) or load all settings into the generator.",
+  "type": ["app"],
+  "date": "2026-06-29",
+  "wan2gp_version": "",
+  "url": "https://github.com/davidbrum/wan2gp-prompt-manager"
+}
