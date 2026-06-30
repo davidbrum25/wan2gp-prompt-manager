@@ -4,19 +4,11 @@ Browse your generated images and videos, inspect their embedded metadata, and se
 
 Works with **both images and videos** that contain WanGP generation metadata.
 
-## Screenshots
+## Screenshot
 
 Three-column layout with sidebar controls, thumbnail grid, and metadata preview (v1.3.1):
 
-![Prompt Manager v1.3 overview](screens/003.png)
-
-Browse your outputs in a thumbnail grid and inspect generation metadata for any selected file:
-
-![Prompt Manager grid view](screens/001.png)
-
-Click any metadata row to send that value to the Media Generator, or load the full recipe with one button:
-
-![Clickable metadata panel](screens/002.png)
+![Prompt Manager](screens/004.png)
 
 ## Features
 
