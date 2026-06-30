@@ -68,14 +68,7 @@ Ctrl/Cmd+click to multi-select items, then:
 
 - Hover **×** on thumbnails to delete files (or remove library entries)
 - Collapsible long prompts in the metadata panel
-- Independent plugin — does not require the File Gallery plugin
-
-### Related Wan2GP plugins
-
-This plugin is maintained as its own git repository. These companion plugins are also set up as separate git repos under `plugins/`:
-
-- [wan2gp-gallery](https://github.com/Tophness/wan2gp-gallery) — browse output folders and join video frames
-- [wan2gp-lora-manager](https://github.com/Tophness/wan2gp-lora-manager) — manage local LoRAs and CivitAI browsing
+- Standalone plugin — no other Wan2GP plugins required
 
 ## Requirements
 
@@ -136,7 +129,6 @@ feat: update plugin logic, add settings, and initialize git repositories for gal
 - Added icon toolbar for refresh, open folder, export library, and import library
 - Added grid zoom slider with browser-local persistence
 - Improved metadata panel with collapsible long prompts
-- Documented companion plugin repositories (gallery, lora manager, prompt manager)
 
 ## Author
 
