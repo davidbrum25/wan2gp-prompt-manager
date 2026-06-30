@@ -6,7 +6,7 @@ Works with **both images and videos** that contain WanGP generation metadata.
 
 ## Screenshots
 
-Full workflow with search, filters, sort, grid size, copy buttons, variations, saved library, and in-plugin generation:
+Three-column layout with sidebar controls, thumbnail grid, and metadata preview (v1.3.1):
 
 ![Prompt Manager v1.3 overview](screens/003.png)
 
@@ -20,15 +20,21 @@ Click any metadata row to send that value to the Media Generator, or load the fu
 
 ## Features
 
+### Three-column layout (v1.3.1)
+
+- **Left sidebar** — view mode, refresh, open outputs folder, library import/export, search, filters, sort, grid size, and bulk actions
+- **Center grid** — thumbnail browser with folder navigation and adjustable zoom slider (persisted in your browser)
+- **Right panel** — preview, clickable metadata, variations, library tags, and generation actions
+
 ### Browse & filter
 
 - Grid view of outputs from your configured save folders (with folder navigation)
 - **Search** by prompt, model, filename, or tags
 - **Filters** for model, media type (image/video), and date range
 - **Sort** by newest, oldest, model name, or prompt length
-- **Grid size** toggle: Compact / Comfortable / Large
+- **Grid size** preset: Compact / Comfortable / Large, plus a **zoom slider** for fine-tuning thumbnail size
 - Preview panel for the selected image or video
-- **Open Outputs Folder** button
+- **Open Outputs Folder** button (icon toolbar in sidebar)
 
 ### Click-to-apply metadata
 
@@ -69,7 +75,15 @@ Ctrl/Cmd+click to multi-select items, then:
 ### Other
 
 - Hover **×** on thumbnails to delete files (or remove library entries)
+- Collapsible long prompts in the metadata panel
 - Independent plugin — does not require the File Gallery plugin
+
+### Related Wan2GP plugins
+
+This plugin is maintained as its own git repository. These companion plugins are also set up as separate git repos under `plugins/`:
+
+- [wan2gp-gallery](https://github.com/Tophness/wan2gp-gallery) — browse output folders and join video frames
+- [wan2gp-lora-manager](https://github.com/Tophness/wan2gp-lora-manager) — manage local LoRAs and CivitAI browsing
 
 ## Requirements
 
@@ -117,6 +131,20 @@ Files without embedded WanGP metadata still show a preview and basic file info, 
 ## Updating
 
 If you installed via the Plugins UI from GitHub, use **Update** on the plugin in the Plugins tab, then restart Wan2GP.
+
+## Changelog
+
+### v1.3.1
+
+```
+feat: update plugin logic, add settings, and initialize git repositories for gallery, lora, and prompt managers
+```
+
+- Reorganized UI into a three-column layout (sidebar, grid, metadata panel)
+- Added icon toolbar for refresh, open folder, export library, and import library
+- Added grid zoom slider with browser-local persistence
+- Improved metadata panel with collapsible long prompts
+- Documented companion plugin repositories (gallery, lora manager, prompt manager)
 
 ## Author
 

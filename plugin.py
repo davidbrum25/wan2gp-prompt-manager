@@ -98,13 +98,120 @@ class PromptManagerPlugin(WAN2GPPlugin):
         css = """
             #pm-layout {
                 display: flex;
-                gap: 16px;
-                min-height: 75vh;
-                align-items: flex-start;
+                gap: 12px;
+                min-height: 78vh;
+                align-items: stretch;
+                width: 100%;
+            }
+            #pm-sidebar {
+                flex: 0 0 240px;
+                max-width: 260px;
+                min-width: 220px;
+                display: flex !important;
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                gap: 10px;
+                max-height: 84vh;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                border: 1px solid var(--border-color-primary);
+                padding: 12px;
+                background-color: var(--background-fill-primary);
+                border-radius: 8px;
+            }
+            #pm-sidebar .pm-sidebar-section {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px;
+            }
+            #pm-sidebar .pm-sidebar-section + .pm-sidebar-section {
+                padding-top: 10px;
+                border-top: 1px solid var(--border-color-primary);
+            }
+            #pm-sidebar .pm-section-label {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: var(--body-text-color-subdued);
+                margin: 0 0 2px 0;
+            }
+            #pm-sidebar .pm-section-label:not(:first-child) {
+                padding-top: 10px;
+                border-top: 1px solid var(--border-color-primary);
+                margin-top: 4px;
+            }
+            #pm-sidebar .pm-section-label p {
+                margin: 0;
+            }
+            #pm-sidebar .pm-sidebar-btn {
+                width: 100%;
+                flex-shrink: 0 !important;
+            }
+            #pm-browse-header {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: flex-end !important;
+                gap: 8px !important;
+                width: 100% !important;
+            }
+            #pm-browse-header .pm-section-label {
+                flex-grow: 1 !important;
+                margin: 0 !important;
+            }
+            #pm-sidebar .pm-icon-btn {
+                width: 32px !important;
+                min-width: 32px !important;
+                max-width: 32px !important;
+                height: 32px !important;
+                padding: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 16px !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+                border-radius: 6px !important;
+                background-color: var(--background-fill-secondary) !important;
+                border: 1px solid var(--border-color-primary) !important;
+                color: var(--body-text-color) !important;
+                cursor: pointer !important;
+                transition: all 0.15s ease !important;
+            }
+            #pm-sidebar .pm-icon-btn:hover {
+                background-color: var(--background-fill-primary) !important;
+                border-color: var(--border-color-accent) !important;
+                color: var(--primary-500) !important;
+            }
+            #pm-import-upload {
+                display: none !important;
+            }
+            #pm-sidebar .block {
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+            }
+            #pm-sidebar .form,
+            #pm-sidebar .gr-form {
+                display: flex !important;
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            #pm-sidebar > *,
+            #pm-sidebar .form > *,
+            #pm-sidebar .gr-form > * {
+                flex-shrink: 0 !important;
             }
             #pm-grid-container {
-                flex: 3;
-                max-height: 80vh;
+                flex: 1;
+                min-width: 0;
+                max-height: 82vh;
                 overflow-y: auto;
                 border: 1px solid var(--border-color-primary);
                 padding: 10px;
@@ -112,25 +219,233 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 border-radius: 8px;
             }
             #pm-detail-panel {
-                flex: 1;
+                flex: 0 0 320px;
+                max-width: 380px;
+                min-width: 280px;
+                max-height: 82vh;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
                 border: 1px solid var(--border-color-primary);
-                padding: 15px;
+                padding: 12px;
                 background-color: var(--background-fill-primary);
                 border-radius: 8px;
-                min-width: 280px;
+                display: flex !important;
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                gap: 8px;
+            }
+            #pm-detail-panel .block {
+                width: 100% !important;
+                min-width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+                overflow: hidden !important;
+            }
+            #pm-detail-panel .form,
+            #pm-detail-panel .gr-form {
+                display: flex !important;
+                flex-direction: column !important;
+                flex-wrap: nowrap !important;
+                width: 100% !important;
+                min-width: 0 !important;
+                gap: 8px !important;
+            }
+            #pm-detail-panel > *,
+            #pm-detail-panel .form > *,
+            #pm-detail-panel .gr-form > * {
+                flex-shrink: 0 !important;
+            }
+            /* Ensure Gradio Image/Video preview wrappers don't overflow the detail panel */
+            #pm-detail-panel .image-container,
+            #pm-detail-panel .video-container,
+            #pm-detail-panel .wrap,
+            #pm-detail-panel .svelte-1adwusx,
+            #pm-detail-panel .svelte-jox3wf,
+            #pm-detail-panel .svelte-11xb1hd {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            #pm-detail-panel img,
+            #pm-detail-panel video {
+                max-width: 100% !important;
+                object-fit: contain !important;
+            }
+            #pm-detail-panel :fullscreen img,
+            #pm-detail-panel :fullscreen video,
+            #pm-detail-panel :-webkit-full-screen img,
+            #pm-detail-panel :-webkit-full-screen video,
+            #pm-detail-panel :-moz-full-screen img,
+            #pm-detail-panel :-moz-full-screen video {
+                max-height: 100% !important;
+                max-width: 100% !important;
+                width: auto !important;
+                height: auto !important;
+                object-fit: contain !important;
+            }
+            #pm-detail-panel .source-selection,
+            #pm-detail-panel [data-testid="source-select"] {
+                display: none !important;
+            }
+            #pm-detail-panel .icon-buttons,
+            #pm-detail-panel .image-buttons,
+            #pm-detail-panel .download-button-wrapper {
+                right: 8px !important;
+                top: 8px !important;
+                transform: scale(0.8) !important;
+                transform-origin: top right !important;
+                gap: 4px !important;
+            }
+            #pm-detail-panel button {
+                width: 100%;
+                flex-shrink: 0 !important;
+            }
+            #pm-detail-panel .image-container button,
+            #pm-detail-panel .video-container button,
+            #pm-detail-panel .pm-copy-btn {
+                width: auto !important;
+            }
+            #pm-detail-panel .pm-detail-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
             }
             .pm-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(var(--grid-item-size, 120px), 1fr));
                 gap: 16px;
             }
             .pm-grid.pm-grid-compact {
-                grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(var(--grid-item-size, 88px), 1fr));
                 gap: 10px;
             }
             .pm-grid.pm-grid-large {
-                grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(var(--grid-item-size, 168px), 1fr));
                 gap: 20px;
+            }
+            #pm-grid-column {
+                display: flex !important;
+                flex-direction: column !important;
+                flex: 1 !important;
+                min-width: 0 !important;
+            }
+            #pm-grid-toolbar {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                width: 100% !important;
+                margin-bottom: 8px !important;
+                background-color: var(--background-fill-secondary);
+                padding: 6px 12px !important;
+                border-radius: 8px;
+                border: 1px solid var(--border-color-primary);
+                flex-shrink: 0 !important;
+            }
+            .pm-toolbar-title {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: var(--body-text-color-subdued);
+                letter-spacing: 0.04em;
+                margin: 0 !important;
+            }
+            #pm-zoom-container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: center !important;
+                gap: 6px !important;
+                margin: 0 !important;
+                width: auto !important;
+                flex-shrink: 0 !important;
+                flex: 0 0 auto !important;
+            }
+            #pm-zoom-container > * {
+                flex: 0 0 auto !important;
+                width: auto !important;
+            }
+            .pm-zoom-icon {
+                font-size: 11px;
+                color: var(--body-text-color-subdued);
+                user-select: none;
+            }
+            #pm-grid-zoom {
+                width: 240px !important;
+                min-width: 240px !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                flex-shrink: 0 !important;
+            }
+            #pm-grid-zoom .wrap {
+                padding: 0 !important;
+                display: flex !important;
+                flex-direction: row-reverse !important;
+                align-items: center !important;
+                gap: 8px !important;
+                width: 100% !important;
+                overflow: visible !important;
+            }
+            #pm-grid-zoom .head {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 4px !important;
+                margin-bottom: 0 !important;
+                width: auto !important;
+                flex-shrink: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            #pm-grid-zoom .head label {
+                display: none !important;
+            }
+            #pm-grid-zoom .head input[type="number"] {
+                width: 48px !important;
+                min-width: 48px !important;
+                height: 22px !important;
+                padding: 0 2px !important;
+                font-size: 11px !important;
+                text-align: center !important;
+                border-radius: 4px !important;
+                border: 1px solid var(--border-color-primary) !important;
+                background-color: var(--background-fill-primary) !important;
+                color: var(--body-text-color) !important;
+            }
+            #pm-grid-zoom .head button,
+            #pm-grid-zoom button.reset-button {
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                cursor: pointer !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 16px !important;
+                height: 16px !important;
+                min-width: 16px !important;
+                align-self: center !important;
+            }
+            #pm-grid-zoom button.reset-button svg,
+            #pm-grid-zoom .head button svg {
+                align-self: center !important;
+                margin: 0 !important;
+            }
+            #pm-grid-zoom .slider_input_container,
+            #pm-grid-zoom .wrap > input[type="range"],
+            #pm-grid-zoom .wrap > div:not(.head) {
+                flex-grow: 1 !important;
+                margin: 0 !important;
+                width: auto !important;
+                min-width: 0 !important;
+                overflow: visible !important;
             }
             .pm-item {
                 position: relative;
@@ -254,10 +569,49 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 font-weight: 600;
                 white-space: nowrap;
                 vertical-align: top;
-                width: 1%;
+                width: 90px;
             }
             .pm-clickable td:last-child {
                 font-weight: bold;
+                word-wrap: break-word;
+                word-break: break-word;
+                white-space: pre-wrap;
+            }
+            .pm-prompt-wrapper {
+                position: relative;
+                display: block;
+                width: 100%;
+            }
+            .pm-prompt-text {
+                display: block;
+                word-wrap: break-word;
+                word-break: break-word;
+                white-space: pre-wrap;
+            }
+            .pm-prompt-text.collapsed {
+                display: -webkit-box !important;
+                -webkit-line-clamp: 4;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .pm-prompt-toggle {
+                display: inline-block;
+                background: var(--background-fill-secondary);
+                border: 1px solid var(--border-color-primary);
+                color: var(--primary-500);
+                cursor: pointer;
+                font-size: 11px;
+                font-weight: bold;
+                padding: 1px 6px;
+                margin-top: 4px;
+                border-radius: 4px;
+                line-height: 1.2;
+                transition: all 0.15s ease;
+            }
+            .pm-prompt-toggle:hover {
+                background: var(--background-fill-primary);
+                color: var(--primary-400);
             }
             .pm-copy-btn {
                 cursor: pointer;
@@ -274,50 +628,99 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 background-color: var(--background-fill-secondary);
             }
             #pm-bulk-row {
-                align-items: center;
-                gap: 8px;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 6px !important;
             }
             #pm-bulk-count {
                 font-size: 12px;
                 color: var(--body-text-color-subdued);
-                margin-right: auto;
+                text-align: center;
             }
             .pm-hint {
                 font-size: 12px;
                 color: var(--body-text-color-subdued);
                 margin-bottom: 10px;
             }
+            #pm_info {
+                width: 100% !important;
+                table-layout: fixed;
+                border-collapse: collapse;
+            }
             #pm_info TR, #pm_info TD {
                 background-color: transparent;
                 color: inherit;
                 padding: 6px 4px;
-                border: 0 !important;
+                border: 1px dashed #6e789f4f !important;
                 font-size: 12px;
             }
             #pm-filter-count {
                 font-size: 12px;
                 color: var(--body-text-color-subdued);
-                align-self: center;
+                text-align: center;
+                padding: 4px 0;
             }
-            #pm-header-row {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                gap: 16px;
-                width: 100%;
+            #pm-sidebar .pm-header-text {
+                margin: 0 0 10px 0 !important;
+                border-bottom: 1px solid var(--border-color-primary);
+                padding-bottom: 12px;
+                flex-shrink: 0 !important;
             }
-            #pm-header-row .pm-header-text {
-                flex: 1;
-                min-width: 0;
+            #pm-sidebar .pm-header-text h3 {
+                font-size: 15px !important;
+                margin: 0 0 4px 0 !important;
+                font-weight: 700 !important;
+                color: var(--body-text-color) !important;
             }
-            #pm-open-outputs-btn {
-                flex-shrink: 0;
-                margin-top: 4px;
+            #pm-sidebar .pm-header-text p {
+                font-size: 11px !important;
+                line-height: 1.4 !important;
+                color: var(--body-text-color-subdued) !important;
+                margin: 0 !important;
             }
         """
 
         js = """
             function() {
+                // Set tooltips for icon buttons
+                setTimeout(() => {
+                    const rBtn = document.getElementById('pm-refresh-btn');
+                    if (rBtn) rBtn.setAttribute('title', 'Refresh Files');
+                    const oBtn = document.getElementById('pm-open-outputs-btn');
+                    if (oBtn) oBtn.setAttribute('title', 'Open Outputs Folder');
+                    const eBtn = document.getElementById('pm-export-library-btn');
+                    if (eBtn) eBtn.setAttribute('title', 'Export Library');
+                    const iBtn = document.getElementById('pm-import-library-btn');
+                    if (iBtn) iBtn.setAttribute('title', 'Import Library JSON');
+                }, 300);
+
+                // Restore zoom level
+                setTimeout(() => {
+                    const savedZoom = localStorage.getItem('pm-grid-zoom');
+                    if (savedZoom) {
+                        const container = document.getElementById('pm-grid-container');
+                        if (container) {
+                            container.style.setProperty('--grid-item-size', savedZoom + 'px');
+                        }
+                        const sliderInput = document.querySelector('#pm-grid-zoom input[type="range"]');
+                        if (sliderInput) {
+                            sliderInput.value = savedZoom;
+                            sliderInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                }, 400);
+
+                window.togglePMPrompt = function(btn) {
+                    const textEl = btn.previousElementSibling;
+                    if (textEl.classList.contains('collapsed')) {
+                        textEl.classList.remove('collapsed');
+                        btn.textContent = 'Hide';
+                    } else {
+                        textEl.classList.add('collapsed');
+                        btn.textContent = '...';
+                    }
+                };
+
                 window.copyPromptManagerValue = function(button) {
                     const row = button.closest('tr');
                     if (!row) return;
@@ -405,113 +808,154 @@ class PromptManagerPlugin(WAN2GPPlugin):
             gr.HTML(value=f"<style>{css}</style>")
             blocks.load(fn=None, js=js)
             with gr.Column(elem_id="prompt_manager_tab_container"):
-                with gr.Row(elem_id="pm-header-row"):
-                    gr.Markdown(
-                        "### Prompt Manager\n"
-                        "Browse your outputs and click any metadata row to send that value to the Media Generator. "
-                        "Works with both images and videos.",
-                        elem_classes="pm-header-text",
-                    )
-                    self.open_outputs_btn = gr.Button(
-                        "Open Outputs Folder",
-                        variant="secondary",
-                        elem_id="pm-open-outputs-btn",
-                    )
-                with gr.Row():
-                    self.refresh_btn = gr.Button("Refresh Files", variant="secondary")
-                    self.filter_count = gr.Markdown("", elem_id="pm-filter-count")
-                with gr.Row():
-                    self.view_mode = gr.Dropdown(
-                        label="View",
-                        choices=[VIEW_OUTPUTS, VIEW_LIBRARY],
-                        value=VIEW_OUTPUTS,
-                        scale=1,
-                    )
-                    self.filter_search = gr.Textbox(
-                        label="Search",
-                        placeholder="Search prompt, model, filename, tags...",
-                        scale=3,
-                    )
-                with gr.Row():
-                    self.filter_model = gr.Dropdown(
-                        label="Model",
-                        choices=[FILTER_MODEL_ALL],
-                        value=FILTER_MODEL_ALL,
-                        scale=2,
-                    )
-                    self.filter_media = gr.Dropdown(
-                        label="Media type",
-                        choices=[FILTER_MEDIA_ALL, FILTER_MEDIA_IMAGE, FILTER_MEDIA_VIDEO],
-                        value=FILTER_MEDIA_ALL,
-                        scale=1,
-                    )
-                    self.filter_period = gr.Dropdown(
-                        label="Date",
-                        choices=[
-                            FILTER_PERIOD_ALL,
-                            FILTER_PERIOD_TODAY,
-                            FILTER_PERIOD_7D,
-                            FILTER_PERIOD_30D,
-                            FILTER_PERIOD_90D,
-                        ],
-                        value=FILTER_PERIOD_ALL,
-                        scale=1,
-                    )
-                    self.filter_sort = gr.Dropdown(
-                        label="Sort",
-                        choices=[SORT_NEWEST, SORT_OLDEST, SORT_MODEL_AZ, SORT_PROMPT_LEN],
-                        value=SORT_NEWEST,
-                        scale=1,
-                    )
-                    self.filter_grid_size = gr.Dropdown(
-                        label="Grid size",
-                        choices=[GRID_SIZE_COMPACT, GRID_SIZE_COMFORTABLE, GRID_SIZE_LARGE],
-                        value=GRID_SIZE_COMFORTABLE,
-                        scale=1,
-                    )
-                with gr.Row(elem_id="pm-bulk-row", visible=False) as self.bulk_row:
-                    self.bulk_count = gr.Markdown("", elem_id="pm-bulk-count")
-                    self.bulk_delete_btn = gr.Button("Delete Selected", size="sm", variant="stop")
-                    self.bulk_save_btn = gr.Button("Save Selected to Library", size="sm")
-                    self.bulk_export_btn = gr.Button("Export Selected Prompts", size="sm")
-                with gr.Row():
-                    self.export_library_btn = gr.Button("Export Library", size="sm", variant="secondary")
-                    self.library_import_upload = gr.File(
-                        label="Import Library JSON",
-                        file_types=[".json"],
-                        scale=2,
-                    )
-                    self.library_export_file = gr.File(label="Library export", visible=False)
                 with gr.Row(elem_id="pm-layout"):
-                    self.grid_html = gr.HTML(
-                        value="<div class='pm-grid'><p class='placeholder'>Click 'Refresh Files' to load your outputs.</p></div>",
-                        elem_id="pm-grid-container",
-                    )
+                    with gr.Column(elem_id="pm-sidebar"):
+                        gr.Markdown(
+                            "### Prompt Manager\n"
+                            "Browse outputs, filter your library, and click metadata to send values to the Media Generator.",
+                            elem_classes="pm-header-text",
+                        )
+                        with gr.Row(elem_id="pm-browse-header"):
+                            gr.Markdown("Browse", elem_classes="pm-section-label")
+                            self.refresh_btn = gr.Button(
+                                "🔄",
+                                variant="secondary",
+                                elem_classes="pm-icon-btn",
+                                elem_id="pm-refresh-btn",
+                            )
+                            self.open_outputs_btn = gr.Button(
+                                "📁",
+                                variant="secondary",
+                                elem_classes="pm-icon-btn",
+                                elem_id="pm-open-outputs-btn",
+                            )
+                            self.export_library_btn = gr.Button(
+                                "📤",
+                                variant="secondary",
+                                elem_classes="pm-icon-btn",
+                                elem_id="pm-export-library-btn",
+                            )
+                            self.import_library_btn = gr.Button(
+                                "📥",
+                                variant="secondary",
+                                elem_classes="pm-icon-btn",
+                                elem_id="pm-import-library-btn",
+                            )
+                        self.view_mode = gr.Dropdown(
+                            label="View",
+                            choices=[VIEW_OUTPUTS, VIEW_LIBRARY],
+                            value=VIEW_OUTPUTS,
+                        )
+                        self.filter_count = gr.Markdown("", elem_id="pm-filter-count")
+
+                        gr.Markdown("Search & filters", elem_classes="pm-section-label")
+                        self.filter_search = gr.Textbox(
+                            label="Search",
+                            placeholder="Prompt, model, filename, tags...",
+                        )
+                        self.filter_model = gr.Dropdown(
+                            label="Model",
+                            choices=[FILTER_MODEL_ALL],
+                            value=FILTER_MODEL_ALL,
+                        )
+                        self.filter_media = gr.Dropdown(
+                            label="Media type",
+                            choices=[FILTER_MEDIA_ALL, FILTER_MEDIA_IMAGE, FILTER_MEDIA_VIDEO],
+                            value=FILTER_MEDIA_ALL,
+                        )
+                        self.filter_period = gr.Dropdown(
+                            label="Date",
+                            choices=[
+                                FILTER_PERIOD_ALL,
+                                FILTER_PERIOD_TODAY,
+                                FILTER_PERIOD_7D,
+                                FILTER_PERIOD_30D,
+                                FILTER_PERIOD_90D,
+                            ],
+                            value=FILTER_PERIOD_ALL,
+                        )
+                        self.filter_sort = gr.Dropdown(
+                            label="Sort",
+                            choices=[SORT_NEWEST, SORT_OLDEST, SORT_MODEL_AZ, SORT_PROMPT_LEN],
+                            value=SORT_NEWEST,
+                        )
+                        self.filter_grid_size = gr.Dropdown(
+                            label="Grid size",
+                            choices=[GRID_SIZE_COMPACT, GRID_SIZE_COMFORTABLE, GRID_SIZE_LARGE],
+                            value=GRID_SIZE_COMFORTABLE,
+                        )
+
+                        with gr.Column(elem_id="pm-bulk-row", visible=False) as self.bulk_row:
+                            gr.Markdown("Bulk actions", elem_classes="pm-section-label")
+                            self.bulk_count = gr.Markdown("", elem_id="pm-bulk-count")
+                            self.bulk_delete_btn = gr.Button(
+                                "Delete Selected",
+                                size="sm",
+                                variant="stop",
+                                elem_classes="pm-sidebar-btn",
+                            )
+                            self.bulk_save_btn = gr.Button(
+                                "Save Selected to Library",
+                                size="sm",
+                                elem_classes="pm-sidebar-btn",
+                            )
+                            self.bulk_export_btn = gr.Button(
+                                "Export Selected Prompts",
+                                size="sm",
+                                elem_classes="pm-sidebar-btn",
+                            )
+
+                        self.library_import_upload = gr.File(
+                            label="Import Library JSON",
+                            file_types=[".json"],
+                            elem_id="pm-import-upload",
+                        )
+                        self.library_export_file = gr.File(label="Library export", visible=False)
+
+                    with gr.Column(elem_id="pm-grid-column", scale=2):
+                        with gr.Row(elem_id="pm-grid-toolbar"):
+                            gr.HTML("<div class='pm-toolbar-title'>Grid View</div>")
+                            with gr.Row(elem_id="pm-zoom-container"):
+                                gr.HTML("<span class='pm-zoom-icon'>➖</span>")
+                                self.grid_zoom_slider = gr.Slider(
+                                    minimum=60,
+                                    maximum=240,
+                                    value=120,
+                                    step=5,
+                                    label="Zoom",
+                                    show_label=False,
+                                    elem_id="pm-grid-zoom",
+                                )
+                                gr.HTML("<span class='pm-zoom-icon'>➕</span>")
+                        self.grid_html = gr.HTML(
+                            value="<div class='pm-grid'><p class='placeholder'>Click 'Refresh Files' to load your outputs.</p></div>",
+                            elem_id="pm-grid-container",
+                        )
+
                     with gr.Column(elem_id="pm-detail-panel"):
                         with gr.Column(visible=False) as self.preview_row:
-                            self.video_preview = gr.Video(label="Preview", interactive=True, height=220, visible=False)
-                            self.image_preview = gr.Image(label="Preview", interactive=False, height=220, visible=False)
+                            self.video_preview = gr.Video(label="Preview", interactive=False, height=200, visible=False)
+                            self.image_preview = gr.Image(label="Preview", interactive=False, height=200, visible=False)
                         self.metadata_html = gr.HTML(
                             value="<div class='pm-metadata'><p class='placeholder'>Select a file to view metadata.</p></div>"
                         )
-                        with gr.Row(visible=False) as self.variation_row:
+                        with gr.Column(visible=False) as self.variation_row:
                             self.variation_same_btn = gr.Button("Recreate (Same Seed)", size="sm")
                             self.variation_new_btn = gr.Button("Variation (New Seed)", size="sm")
                             self.variation_prompt_btn = gr.Button("Prompt + New Seed", size="sm")
-                        with gr.Row(visible=False) as self.library_row:
+                        with gr.Column(visible=False) as self.library_row:
                             self.save_library_btn = gr.Button("★ Save to Library", size="sm")
                             self.remove_library_btn = gr.Button("Remove from Library", size="sm", visible=False)
                             self.library_tags = gr.Textbox(
                                 label="Tags",
                                 placeholder="portrait, fantasy",
-                                scale=2,
                             )
-                        with gr.Row(visible=False) as self.generate_row:
+                        with gr.Column(visible=False) as self.generate_row:
                             self.generate_btn = gr.Button("Generate Here", variant="primary", size="sm")
                             self.generate_cancel_btn = gr.Button("Cancel", size="sm", visible=False)
                         with gr.Column(visible=False) as self.generate_output_row:
-                            self.generate_preview_image = gr.Image(label="Generated output", height=220, visible=False)
-                            self.generate_preview_video = gr.Video(label="Generated output", height=220, visible=False)
+                            self.generate_preview_image = gr.Image(label="Generated output", height=180, visible=False)
+                            self.generate_preview_video = gr.Video(label="Generated output", height=180, visible=False)
                         self.use_all_btn = gr.Button(
                             "Use All Settings in Generator",
                             variant="primary",
@@ -747,11 +1191,31 @@ class PromptManagerPlugin(WAN2GPPlugin):
             outputs=[self.library_export_file],
             show_progress="hidden",
         )
+        self.import_library_btn.click(
+            fn=None,
+            js="""() => {
+                const fileInput = document.querySelector('#pm-import-upload input[type="file"]');
+                if (fileInput) {
+                    fileInput.click();
+                }
+            }"""
+        )
         self.library_import_upload.change(
             fn=self.import_library_file,
             inputs=[self.library_import_upload] + list_inputs,
             outputs=grid_outputs,
             show_progress="hidden",
+        )
+        self.grid_zoom_slider.change(
+            fn=None,
+            inputs=[self.grid_zoom_slider],
+            js="""(val) => {
+                const container = document.getElementById('pm-grid-container');
+                if (container) {
+                    container.style.setProperty('--grid-item-size', val + 'px');
+                }
+                localStorage.setItem('pm-grid-zoom', val);
+            }"""
         )
 
         active_job = {"job": None}
@@ -761,7 +1225,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
             if not settings:
                 gr.Warning("No settings found for this item.")
                 return (
-                    gr.Row(visible=False),
+                    gr.Column(visible=False),
                     gr.Button(visible=False),
                     gr.Column(visible=False),
                     gr.Image(value=None, visible=False),
@@ -791,7 +1255,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
             if result.cancelled:
                 gr.Info("Generation cancelled.")
                 return (
-                    gr.Row(visible=True),
+                    gr.Column(visible=True),
                     gr.Button(visible=False),
                     gr.Column(visible=False),
                     gr.Image(value=None, visible=False),
@@ -801,7 +1265,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 errors = list(result.errors or [])
                 gr.Warning(str(errors[0] if errors else "Generation completed without output."))
                 return (
-                    gr.Row(visible=True),
+                    gr.Column(visible=True),
                     gr.Button(visible=False),
                     gr.Column(visible=False),
                     gr.Image(value=None, visible=False),
@@ -812,7 +1276,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
             gr.Info(f"Generated '{os.path.basename(output_path)}'.")
             if self.has_video_file_extension(output_path):
                 return (
-                    gr.Row(visible=True),
+                    gr.Column(visible=True),
                     gr.Button(visible=False),
                     gr.Column(visible=True),
                     gr.Image(value=None, visible=False),
@@ -820,14 +1284,14 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 )
             if self.has_image_file_extension(output_path):
                 return (
-                    gr.Row(visible=True),
+                    gr.Column(visible=True),
                     gr.Button(visible=False),
                     gr.Column(visible=True),
                     gr.Image(value=Image.open(output_path), visible=True),
                     gr.Video(value=None, visible=False),
                 )
             return (
-                gr.Row(visible=True),
+                gr.Column(visible=True),
                 gr.Button(visible=False),
                 gr.Column(visible=False),
                 gr.Image(value=None, visible=False),
@@ -1182,7 +1646,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
             self.file_cache: cache_json,
             self.filter_model: gr.Dropdown(choices=[FILTER_MODEL_ALL], value=FILTER_MODEL_ALL),
             self.filter_count: "",
-            self.bulk_row: gr.Row(visible=False),
+            self.bulk_row: gr.Column(visible=False),
             self.bulk_count: "",
         }
 
@@ -1228,7 +1692,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 self.file_cache: "",
                 self.filter_model: gr.Dropdown(choices=model_choices, value=filter_model),
                 self.filter_count: f"Showing **{shown}** of **{total}** saved prompts",
-                self.bulk_row: gr.Row(visible=False),
+                self.bulk_row: gr.Column(visible=False),
                 self.bulk_count: "",
             }
 
@@ -1293,7 +1757,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
             self.file_cache: cache_json,
             self.filter_model: gr.Dropdown(choices=model_choices, value=filter_model),
             self.filter_count: count_text,
-            self.bulk_row: gr.Row(visible=False),
+            self.bulk_row: gr.Column(visible=False),
             self.bulk_count: "",
         }
 
@@ -1402,8 +1866,8 @@ class PromptManagerPlugin(WAN2GPPlugin):
     def update_bulk_bar(self, selected_files_json):
         count = len(self._parse_selected_paths(selected_files_json))
         if count < 2:
-            return gr.Row(visible=False), ""
-        return gr.Row(visible=True), f"**{count}** items selected"
+            return gr.Column(visible=False), ""
+        return gr.Column(visible=True), f"**{count}** items selected"
 
     def bulk_delete_selected(
         self,
@@ -1737,14 +2201,31 @@ class PromptManagerPlugin(WAN2GPPlugin):
             value = field_values.get(field_id)
             if value is None or value == "":
                 continue
-            display = html.escape(str(value)).replace("\n", "<br>")
-            rows.append(
-                f"<tr class='pm-clickable' onclick=\"applyPromptManagerField('{field_id}')\" "
-                f"title='Click to use this {html.escape(label)} in the generator'>"
-                f"<td>{html.escape(label)} ▸</td><td><b>{display}</b></td>"
-                f"<td><button class='pm-copy-btn' onclick=\"event.stopPropagation(); copyPromptManagerValue(this)\" "
-                f"title='Copy'>📋</button></td></tr>"
-            )
+            display_str = str(value)
+            if field_id == "prompt" and len(display_str) > 120:
+                escaped_full = html.escape(display_str).replace("\n", "<br>")
+                display = (
+                    f"<span class='pm-prompt-wrapper'>"
+                    f"<span class='pm-prompt-text collapsed'><b>{escaped_full}</b></span>"
+                    f"<button class='pm-prompt-toggle' onclick='event.stopPropagation(); togglePMPrompt(this);'>...</button>"
+                    f"</span>"
+                )
+                rows.append(
+                    f"<tr class='pm-clickable' onclick=\"applyPromptManagerField('{field_id}')\" "
+                    f"title='Click to use this {html.escape(label)} in the generator'>"
+                    f"<td>{html.escape(label)} ▸</td><td>{display}</td>"
+                    f"<td><button class='pm-copy-btn' onclick=\"event.stopPropagation(); copyPromptManagerValue(this)\" "
+                    f"title='Copy'>📋</button></td></tr>"
+                )
+            else:
+                display = html.escape(display_str).replace("\n", "<br>")
+                rows.append(
+                    f"<tr class='pm-clickable' onclick=\"applyPromptManagerField('{field_id}')\" "
+                    f"title='Click to use this {html.escape(label)} in the generator'>"
+                    f"<td>{html.escape(label)} ▸</td><td><b>{display}</b></td>"
+                    f"<td><button class='pm-copy-btn' onclick=\"event.stopPropagation(); copyPromptManagerValue(this)\" "
+                    f"title='Copy'>📋</button></td></tr>"
+                )
 
         for label, value in extra_rows:
             rows.append(
@@ -1769,12 +2250,12 @@ class PromptManagerPlugin(WAN2GPPlugin):
             self.preview_row: gr.Column(visible=False),
             self.video_preview: gr.Video(value=None, visible=False),
             self.image_preview: gr.Image(value=None, visible=False),
-            self.variation_row: gr.Row(visible=False),
-            self.library_row: gr.Row(visible=False),
+            self.variation_row: gr.Column(visible=False),
+            self.library_row: gr.Column(visible=False),
             self.save_library_btn: gr.Button(visible=False),
             self.remove_library_btn: gr.Button(visible=False),
             self.library_tags: gr.Textbox(value=""),
-            self.generate_row: gr.Row(visible=False),
+            self.generate_row: gr.Column(visible=False),
             self.generate_btn: gr.Button(visible=False),
             self.generate_cancel_btn: gr.Button(visible=False),
             self.generate_output_row: gr.Column(visible=False),
@@ -1812,9 +2293,9 @@ class PromptManagerPlugin(WAN2GPPlugin):
 
         if configs and "seed" in configs:
             updates[self.use_all_btn] = gr.Button(visible=True, interactive=True)
-            updates[self.variation_row] = gr.Row(visible=True)
-            updates[self.library_row] = gr.Row(visible=True)
-            updates[self.generate_row] = gr.Row(visible=True)
+            updates[self.variation_row] = gr.Column(visible=True)
+            updates[self.library_row] = gr.Column(visible=True)
+            updates[self.generate_row] = gr.Column(visible=True)
             updates[self.generate_btn] = gr.Button(visible=True)
             if is_library:
                 updates[self.remove_library_btn] = gr.Button(visible=True)
