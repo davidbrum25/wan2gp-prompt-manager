@@ -6,17 +6,33 @@ Works with **both images and videos** that contain WanGP generation metadata.
 
 ## Screenshot
 
-Three-column layout with sidebar controls, thumbnail grid, and metadata preview (v1.3.1):
+Three-column layout with sidebar controls, thumbnail grid, and metadata preview (v1.4.0):
 
-![Prompt Manager](screens/004.png)
+![Prompt Manager](screens/005.png)
 
 ## Features
 
-### Three-column layout (v1.3.1)
+### Three-column layout (v1.4.0)
 
-- **Left sidebar** — view mode, refresh, open outputs folder, library import/export, search, filters, sort, grid size, and bulk actions
-- **Center grid** — thumbnail browser with folder navigation and adjustable zoom slider (persisted in your browser)
-- **Right panel** — preview, clickable metadata, variations, library tags, and generation actions
+- **Left sidebar (collapsible)** — view mode, add/remove custom folders, refresh, open outputs folder, library import/export, search, filters, sort, grid size, and bulk actions. Can be hidden using the collapse button (`◀`) at the top right of the sidebar.
+- **Center grid** — thumbnail browser with folder navigation and adjustable zoom slider (persisted in your browser). Expands automatically when the sidebar is collapsed.
+- **Right panel** — preview, clickable metadata, variations, library tags, and generation actions.
+
+### Interactive Fullscreen View (v1.4.0)
+
+- **Double-click to open** — double-click any thumbnail in the grid or the preview box in the detail panel to open native browser fullscreen.
+- **Keyboard navigation** — press Arrow Left/Up or Arrow Right/Down (or click the on-screen glassmorphic `❮` / `❯` arrows) to cycle through the files in the grid.
+- **Scroll wheel zoom** — scroll the mouse wheel over fullscreen images to zoom in and out smoothly (up to 10x).
+- **Drag-to-pan** — click and drag the mouse when zoomed in to pan around the image naturally.
+- **Background synchronization** — navigating in fullscreen automatically updates the active selection in the background grid, so the detail panel matches when you exit fullscreen.
+
+### Custom Folders & Combined View (v1.4.0)
+
+- **Register custom directories** — click the `➕` button in the sidebar to open your system's native scaled file browser (using Zenity / Tkinter) and add custom folders to the view list.
+- **Delete custom directories** — click the `➖` button in the sidebar to remove registered custom folders (prompts for confirmation or choosing from a list of registered folders).
+- **View switcher** — switch between default outputs, library, or specific custom directories in the `View` dropdown.
+- **All Folders Combined View** — select `"All Folders"` from the View dropdown to display media from all registered folders (and default outputs) aggregated in a single combined view.
+- **Persistent storage** — custom folder lists are saved locally to `custom_folders.json` and persist across restarts.
 
 ### Browse & filter
 
@@ -118,6 +134,25 @@ Files without embedded WanGP metadata still show a preview and basic file info, 
 If you installed via the Plugins UI from GitHub, use **Update** on the plugin in the Plugins tab, then restart Wan2GP.
 
 ## Changelog
+
+### v1.4.0
+
+```
+feat: add sidebar collapse toggle, interactive fullscreen view (zoom/pan/arrows), custom folder integration with native dialogue and combined view
+```
+
+- Added sidebar collapse/expand toggle button (`◀` / `▶`) with browser local storage state persistence.
+- Added advanced interactive fullscreen view for images and videos:
+  - Double-click a thumbnail in the grid or the preview box to enter fullscreen.
+  - Keyboard arrow keys (Left/Right, Up/Down) to navigate through items in fullscreen.
+  - Mouse scroll wheel to zoom in/out (up to 10x) and mouse drag to pan when zoomed.
+  - Native browser fullscreen API integration.
+- Added custom folder browser integration:
+  - Added a `➕` button in the toolbar to register custom folder paths.
+  - Launches a system-native file browser dialog using `zenity` (falling back to Tkinter if needed).
+  - Custom folders are listed inside the `View` dropdown menu.
+  - Added an `"All Folders"` option to aggregate and view files from all default outputs and custom folders combined.
+  - Added a `➖` button to remove custom folders, prompting with confirmation or selection dialog.
 
 ### v1.3.1
 

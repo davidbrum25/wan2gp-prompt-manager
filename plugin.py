@@ -64,6 +64,53 @@ class PromptManagerPlugin(WAN2GPPlugin):
         super().__init__()
         self.loaded_once = False
         self.plugin_dir = os.path.dirname(os.path.abspath(__file__))
+        self.custom_folders_path = os.path.join(self.plugin_dir, "custom_folders.json")
+        self.custom_folders = self.load_custom_folders()
+
+    def load_custom_folders(self):
+        if os.path.exists(self.custom_folders_path):
+            try:
+                with open(self.custom_folders_path, "r", encoding="utf-8") as f:
+                    folders = json.load(f)
+                    if isinstance(folders, list):
+                        return [os.path.abspath(p) for p in folders if os.path.isdir(p)]
+            except Exception as e:
+                print(f"Error loading custom folders: {e}")
+        return []
+
+    def save_custom_folders(self):
+        try:
+            with open(self.custom_folders_path, "w", encoding="utf-8") as f:
+                json.dump(self.custom_folders, f, indent=4)
+        except Exception as e:
+            print(f"Error saving custom folders: {e}")
+
+    def get_view_mode_choices(self):
+        choices = [VIEW_OUTPUTS, VIEW_LIBRARY]
+        for p in self.custom_folders:
+            if p not in choices:
+                choices.append(p)
+        if self.custom_folders:
+            choices.append("All Folders")
+        return choices
+
+    def _resolve_roots_for_view(self, view_mode):
+        if view_mode == VIEW_OUTPUTS:
+            return self._output_roots()
+        elif view_mode == VIEW_LIBRARY:
+            return []
+        elif view_mode == "All Folders":
+            roots = self._output_roots()
+            for path in self.custom_folders:
+                if os.path.isdir(path) and path not in roots:
+                    roots.append(path)
+            return roots
+        elif view_mode in self.custom_folders:
+            if os.path.isdir(view_mode):
+                return [view_mode]
+        if view_mode and os.path.isdir(view_mode):
+            return [view_mode]
+        return self._output_roots()
 
     def setup_ui(self):
         self.add_tab(
@@ -104,6 +151,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 width: 100%;
             }
             #pm-sidebar {
+                position: relative;
                 flex: 0 0 240px;
                 max-width: 260px;
                 min-width: 220px;
@@ -118,6 +166,68 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 padding: 12px;
                 background-color: var(--background-fill-primary);
                 border-radius: 8px;
+                transition: all 0.2s ease-in-out !important;
+            }
+            #pm-collapse-sidebar-btn {
+                position: absolute !important;
+                top: 8px !important;
+                right: 8px !important;
+                z-index: 20 !important;
+                width: 28px !important;
+                height: 28px !important;
+                min-width: 28px !important;
+                max-width: 28px !important;
+                padding: 0 !important;
+                font-size: 14px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background-color: var(--background-fill-secondary) !important;
+                border: 1px solid var(--border-color-primary) !important;
+                color: var(--body-text-color) !important;
+                cursor: pointer !important;
+                border-radius: 6px !important;
+                transition: all 0.15s ease !important;
+            }
+            #pm-collapse-sidebar-btn:hover {
+                background-color: var(--background-fill-primary) !important;
+                border-color: var(--border-color-accent) !important;
+                color: var(--primary-500) !important;
+            }
+            #pm-expand-sidebar-btn {
+                display: none !important;
+                width: 28px !important;
+                height: 28px !important;
+                min-width: 28px !important;
+                max-width: 28px !important;
+                padding: 0 !important;
+                font-size: 14px !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin-right: 8px !important;
+                background-color: var(--background-fill-secondary) !important;
+                border: 1px solid var(--border-color-primary) !important;
+                color: var(--body-text-color) !important;
+                cursor: pointer !important;
+                border-radius: 6px !important;
+                transition: all 0.15s ease !important;
+            }
+            #pm-expand-sidebar-btn:hover {
+                background-color: var(--background-fill-primary) !important;
+                border-color: var(--border-color-accent) !important;
+                color: var(--primary-500) !important;
+            }
+            #pm-layout.sidebar-collapsed #pm-sidebar {
+                width: 0 !important;
+                min-width: 0 !important;
+                max-width: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+                overflow: hidden !important;
+            }
+            #pm-layout.sidebar-collapsed #pm-expand-sidebar-btn {
+                display: flex !important;
             }
             #pm-sidebar .pm-sidebar-section {
                 display: flex !important;
@@ -671,6 +781,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 margin: 0 0 4px 0 !important;
                 font-weight: 700 !important;
                 color: var(--body-text-color) !important;
+                padding-right: 32px !important;
             }
             #pm-sidebar .pm-header-text p {
                 font-size: 11px !important;
@@ -678,12 +789,100 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 color: var(--body-text-color-subdued) !important;
                 margin: 0 !important;
             }
+            
+            /* Custom Fullscreen Overlay */
+            #pm-fullscreen-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: rgba(0, 0, 0, 0.96);
+                z-index: 99999;
+                align-items: center;
+                justify-content: center;
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            #pm-fs-close {
+                position: absolute;
+                top: 20px;
+                right: 25px;
+                color: #fff;
+                font-size: 40px;
+                font-weight: 300;
+                cursor: pointer;
+                z-index: 100001;
+                transition: color 0.15s ease;
+                line-height: 1;
+            }
+            #pm-fs-close:hover {
+                color: var(--primary-500);
+            }
+            .pm-fs-arrow {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                color: rgba(255, 255, 255, 0.6);
+                font-size: 32px;
+                padding: 16px;
+                cursor: pointer;
+                z-index: 100001;
+                user-select: none;
+                transition: all 0.15s ease;
+                background: rgba(0, 0, 0, 0.25);
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .pm-fs-arrow:hover {
+                color: #fff;
+                background: rgba(0, 0, 0, 0.6);
+                border: 1px solid var(--primary-500);
+            }
+            #pm-fs-arrow-left {
+                left: 20px;
+            }
+            #pm-fs-arrow-right {
+                right: 20px;
+            }
+            #pm-fs-content-container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            #pm-fs-content-container img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                transform-origin: center;
+                transition: transform 0.1s ease-out;
+                user-drag: none;
+                -webkit-user-drag: none;
+            }
+            #pm-fs-content-container video {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
+                outline: none;
+            }
         """
 
         js = """
             function() {
                 // Set tooltips for icon buttons
                 setTimeout(() => {
+                    const aBtn = document.getElementById('pm-add-folder-btn');
+                    if (aBtn) aBtn.setAttribute('title', 'Add Custom Folder');
+                    const rmBtn = document.getElementById('pm-remove-folder-btn');
+                    if (rmBtn) rmBtn.setAttribute('title', 'Remove Custom Folder');
                     const rBtn = document.getElementById('pm-refresh-btn');
                     if (rBtn) rBtn.setAttribute('title', 'Refresh Files');
                     const oBtn = document.getElementById('pm-open-outputs-btn');
@@ -692,6 +891,17 @@ class PromptManagerPlugin(WAN2GPPlugin):
                     if (eBtn) eBtn.setAttribute('title', 'Export Library');
                     const iBtn = document.getElementById('pm-import-library-btn');
                     if (iBtn) iBtn.setAttribute('title', 'Import Library JSON');
+                }, 300);
+
+                // Restore sidebar collapsed state
+                setTimeout(() => {
+                    const collapsed = localStorage.getItem('pm-sidebar-collapsed');
+                    if (collapsed === 'true') {
+                        const layout = document.getElementById('pm-layout');
+                        if (layout) {
+                            layout.classList.add('sidebar-collapsed');
+                        }
+                    }
                 }, 300);
 
                 // Restore zoom level
@@ -801,6 +1011,226 @@ class PromptManagerPlugin(WAN2GPPlugin):
                     deleteInput.value = path;
                     deleteInput.dispatchEvent(new Event('input', { bubbles: true }));
                 };
+
+                // Custom Fullscreen Overlay Logic
+                let zoomScale = 1;
+                let panX = 0;
+                let panY = 0;
+                let isPanning = false;
+                let startX = 0;
+                let startY = 0;
+
+                window.updateFullscreenTransform = function() {
+                    const overlay = document.getElementById('pm-fullscreen-overlay');
+                    if (!overlay) return;
+                    const img = overlay.querySelector('img');
+                    if (!img) return;
+                    img.style.transform = `scale(${zoomScale}) translate(${panX / zoomScale}px, ${panY / zoomScale}px)`;
+                };
+
+                window.updateFullscreenContent = function(element) {
+                    const overlay = document.getElementById('pm-fullscreen-overlay');
+                    const container = document.getElementById('pm-fs-content-container');
+                    if (!overlay || !container || !element) return;
+                    
+                    const path = element.dataset.path;
+                    const badge = element.querySelector('.pm-type-badge');
+                    const isVideo = badge ? badge.textContent.trim() === 'VIDEO' : false;
+                    
+                    // Reset zoom & pan
+                    zoomScale = 1;
+                    panX = 0;
+                    panY = 0;
+                    isPanning = false;
+                    
+                    if (isVideo) {
+                        container.innerHTML = `<video src="/gradio_api/file=${path}" controls autoplay loop style="max-width:100%; max-height:100%; object-fit:contain;"></video>`;
+                    } else {
+                        container.innerHTML = `<img src="/gradio_api/file=${path}" style="max-width:100%; max-height:100%; object-fit:contain; transform-origin:center; transition:transform 0.1s ease-out; cursor:grab;" />`;
+                        
+                        const img = container.querySelector('img');
+                        img.addEventListener('load', () => {
+                            window.updateFullscreenTransform();
+                        });
+                    }
+                };
+
+                window.openFullscreen = function(element) {
+                    const overlay = document.getElementById('pm-fullscreen-overlay');
+                    if (!overlay) return;
+                    
+                    overlay.style.display = 'flex';
+                    window.updateFullscreenContent(element);
+                    
+                    if (overlay.requestFullscreen) {
+                        overlay.requestFullscreen().catch(err => {
+                            console.log("Error attempting to enable full-screen mode:", err);
+                        });
+                    } else if (overlay.webkitRequestFullscreen) {
+                        overlay.webkitRequestFullscreen();
+                    }
+                };
+
+                window.closeFullscreen = function() {
+                    const overlay = document.getElementById('pm-fullscreen-overlay');
+                    if (!overlay) return;
+                    
+                    overlay.style.display = 'none';
+                    const container = document.getElementById('pm-fs-content-container');
+                    if (container) container.innerHTML = '';
+                    
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen().catch(err => {
+                            console.log("Error attempting to exit full-screen mode:", err);
+                        });
+                    }
+                };
+
+                window.navigateFullscreen = function(dir) {
+                    const items = Array.from(document.querySelectorAll('.pm-grid .pm-item:not(.pm-folder)'));
+                    if (items.length === 0) return;
+                    
+                    const selected = document.querySelector('.pm-grid .pm-item.selected:not(.pm-folder)');
+                    let index = selected ? items.indexOf(selected) : -1;
+                    
+                    if (index === -1) {
+                        index = 0;
+                    } else {
+                        index = (index + dir + items.length) % items.length;
+                    }
+                    
+                    const targetItem = items[index];
+                    if (targetItem) {
+                        // Click target item to select it in the grid
+                        targetItem.click();
+                        // Update fullscreen overlay display
+                        window.updateFullscreenContent(targetItem);
+                    }
+                };
+
+                // Add document level dblclick handler
+                document.addEventListener('dblclick', (event) => {
+                    const gridItem = event.target.closest('.pm-item:not(.pm-folder)');
+                    const previewContainer = event.target.closest('#pm-preview-container');
+                    
+                    if (gridItem) {
+                        window.openFullscreen(gridItem);
+                    } else if (previewContainer) {
+                        const selected = document.querySelector('.pm-grid .pm-item.selected:not(.pm-folder)');
+                        if (selected) {
+                            window.openFullscreen(selected);
+                        }
+                    }
+                });
+
+                // Attach overlay event listeners
+                setTimeout(() => {
+                    const overlay = document.getElementById('pm-fullscreen-overlay');
+                    if (!overlay) return;
+                    
+                    // Close on backdrop / close button click
+                    overlay.addEventListener('click', (e) => {
+                        const container = document.getElementById('pm-fs-content-container');
+                        if (e.target === overlay || e.target === container || e.target.id === 'pm-fs-close') {
+                            window.closeFullscreen();
+                        }
+                    });
+                    
+                    // Left/Right Arrow button clicks
+                    const arrowLeft = document.getElementById('pm-fs-arrow-left');
+                    const arrowRight = document.getElementById('pm-fs-arrow-right');
+                    if (arrowLeft) {
+                        arrowLeft.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            window.navigateFullscreen(-1);
+                        });
+                    }
+                    if (arrowRight) {
+                        arrowRight.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            window.navigateFullscreen(1);
+                        });
+                    }
+                    
+                    // Mouse Wheel Zoom
+                    overlay.addEventListener('wheel', (e) => {
+                        const img = overlay.querySelector('img');
+                        if (!img) return;
+                        e.preventDefault();
+                        
+                        const zoomIntensity = 0.1;
+                        if (e.deltaY < 0) {
+                            zoomScale = Math.min(zoomScale + zoomIntensity * zoomScale, 10);
+                        } else {
+                            zoomScale = Math.max(zoomScale - zoomIntensity * zoomScale, 1);
+                        }
+                        
+                        if (zoomScale === 1) {
+                            panX = 0;
+                            panY = 0;
+                            img.style.cursor = 'grab';
+                        } else {
+                            img.style.cursor = 'move';
+                        }
+                        window.updateFullscreenTransform();
+                    }, { passive: false });
+                    
+                    // Mouse Drag to Pan
+                    overlay.addEventListener('mousedown', (e) => {
+                        const img = overlay.querySelector('img');
+                        if (!img || zoomScale <= 1) return;
+                        if (e.button !== 0) return;
+                        
+                        e.preventDefault();
+                        isPanning = true;
+                        img.style.cursor = 'grabbing';
+                        startX = e.clientX - panX;
+                        startY = e.clientY - panY;
+                    });
+                    
+                    window.addEventListener('mousemove', (e) => {
+                        if (!isPanning) return;
+                        const img = overlay.querySelector('img');
+                        if (!img) return;
+                        e.preventDefault();
+                        panX = e.clientX - startX;
+                        panY = e.clientY - startY;
+                        window.updateFullscreenTransform();
+                    });
+                    
+                    window.addEventListener('mouseup', () => {
+                        if (!isPanning) return;
+                        isPanning = false;
+                        const img = overlay.querySelector('img');
+                        if (img) {
+                            img.style.cursor = zoomScale > 1 ? 'move' : 'grab';
+                        }
+                    });
+                    
+                    // Sync close state on native fullscreen change
+                    document.addEventListener('fullscreenchange', () => {
+                        if (!document.fullscreenElement && overlay.style.display === 'flex') {
+                            window.closeFullscreen();
+                        }
+                    });
+                }, 500);
+
+                // Keyboard event listener for arrows & Escape
+                window.addEventListener('keydown', (e) => {
+                    const overlay = document.getElementById('pm-fullscreen-overlay');
+                    if (!overlay || overlay.style.display !== 'flex') return;
+                    
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        window.navigateFullscreen(1);
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        window.navigateFullscreen(-1);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        window.closeFullscreen();
+                    }
+                });
             }
         """
 
@@ -808,8 +1238,23 @@ class PromptManagerPlugin(WAN2GPPlugin):
             gr.HTML(value=f"<style>{css}</style>")
             blocks.load(fn=None, js=js)
             with gr.Column(elem_id="prompt_manager_tab_container"):
+                gr.HTML(
+                    value="""
+                    <div id="pm-fullscreen-overlay">
+                        <span id="pm-fs-close">&times;</span>
+                        <span id="pm-fs-arrow-left" class="pm-fs-arrow">&#10094;</span>
+                        <span id="pm-fs-arrow-right" class="pm-fs-arrow">&#10095;</span>
+                        <div id="pm-fs-content-container"></div>
+                    </div>
+                    """
+                )
                 with gr.Row(elem_id="pm-layout"):
                     with gr.Column(elem_id="pm-sidebar"):
+                        self.collapse_sidebar_btn = gr.Button(
+                            "◀",
+                            variant="secondary",
+                            elem_id="pm-collapse-sidebar-btn",
+                        )
                         gr.Markdown(
                             "### Prompt Manager\n"
                             "Browse outputs, filter your library, and click metadata to send values to the Media Generator.",
@@ -817,6 +1262,18 @@ class PromptManagerPlugin(WAN2GPPlugin):
                         )
                         with gr.Row(elem_id="pm-browse-header"):
                             gr.Markdown("Browse", elem_classes="pm-section-label")
+                            self.add_folder_btn = gr.Button(
+                                "➕",
+                                variant="secondary",
+                                elem_classes="pm-icon-btn",
+                                elem_id="pm-add-folder-btn",
+                            )
+                            self.remove_folder_btn = gr.Button(
+                                "➖",
+                                variant="secondary",
+                                elem_classes="pm-icon-btn",
+                                elem_id="pm-remove-folder-btn",
+                            )
                             self.refresh_btn = gr.Button(
                                 "🔄",
                                 variant="secondary",
@@ -843,7 +1300,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                             )
                         self.view_mode = gr.Dropdown(
                             label="View",
-                            choices=[VIEW_OUTPUTS, VIEW_LIBRARY],
+                            choices=self.get_view_mode_choices(),
                             value=VIEW_OUTPUTS,
                         )
                         self.filter_count = gr.Markdown("", elem_id="pm-filter-count")
@@ -914,6 +1371,11 @@ class PromptManagerPlugin(WAN2GPPlugin):
 
                     with gr.Column(elem_id="pm-grid-column", scale=2):
                         with gr.Row(elem_id="pm-grid-toolbar"):
+                            self.expand_sidebar_btn = gr.Button(
+                                "▶",
+                                variant="secondary",
+                                elem_id="pm-expand-sidebar-btn",
+                            )
                             gr.HTML("<div class='pm-toolbar-title'>Grid View</div>")
                             with gr.Row(elem_id="pm-zoom-container"):
                                 gr.HTML("<span class='pm-zoom-icon'>➖</span>")
@@ -933,7 +1395,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                         )
 
                     with gr.Column(elem_id="pm-detail-panel"):
-                        with gr.Column(visible=False) as self.preview_row:
+                        with gr.Column(visible=False, elem_id="pm-preview-container") as self.preview_row:
                             self.video_preview = gr.Video(label="Preview", interactive=False, height=200, visible=False)
                             self.image_preview = gr.Image(label="Preview", interactive=False, height=200, visible=False)
                         self.metadata_html = gr.HTML(
@@ -969,6 +1431,7 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 self.field_action = gr.Text(visible=False, elem_id="pm-field-action")
                 self.delete_action = gr.Text(visible=False, elem_id="pm-delete-action")
                 self.file_cache = gr.Text(visible=False, elem_id="pm-file-cache")
+                self.add_folder_input = gr.Text(visible=False, elem_id="pm-add-folder-input")
 
         grid_outputs = [
             self.grid_html,
@@ -1218,6 +1681,86 @@ class PromptManagerPlugin(WAN2GPPlugin):
             }"""
         )
 
+        self.collapse_sidebar_btn.click(
+            fn=None,
+            js="""() => {
+                const layout = document.getElementById('pm-layout');
+                if (layout) {
+                    layout.classList.add('sidebar-collapsed');
+                    localStorage.setItem('pm-sidebar-collapsed', 'true');
+                }
+            }"""
+        )
+
+        self.expand_sidebar_btn.click(
+            fn=None,
+            js="""() => {
+                const layout = document.getElementById('pm-layout');
+                if (layout) {
+                    layout.classList.remove('sidebar-collapsed');
+                    localStorage.setItem('pm-sidebar-collapsed', 'false');
+                }
+            }"""
+        )
+
+        self.add_folder_btn.click(
+            fn=self.browse_custom_folder,
+            inputs=[
+                self.state,
+                self.current_dir,
+                self.file_cache,
+                self.filter_model,
+                self.filter_media,
+                self.filter_period,
+                self.view_mode,
+                self.filter_search,
+                self.filter_sort,
+                self.filter_grid_size,
+            ],
+            outputs=grid_outputs + [self.view_mode, self.add_folder_input],
+            show_progress="hidden",
+        )
+
+        self.remove_folder_btn.click(
+            fn=self.remove_custom_folder,
+            inputs=[
+                self.state,
+                self.current_dir,
+                self.file_cache,
+                self.filter_model,
+                self.filter_media,
+                self.filter_period,
+                self.view_mode,
+                self.filter_search,
+                self.filter_sort,
+                self.filter_grid_size,
+            ],
+            outputs=grid_outputs + [self.view_mode, self.add_folder_input],
+            show_progress="hidden",
+        )
+
+        add_folder_inputs = [
+            self.add_folder_input,
+            self.state,
+            self.current_dir,
+            self.file_cache,
+            self.filter_model,
+            self.filter_media,
+            self.filter_period,
+            self.view_mode,
+            self.filter_search,
+            self.filter_sort,
+            self.filter_grid_size,
+        ]
+        add_folder_outputs = grid_outputs + [self.view_mode, self.add_folder_input]
+
+        self.add_folder_input.change(
+            fn=self.add_custom_folder,
+            inputs=add_folder_inputs,
+            outputs=add_folder_outputs,
+            show_progress="hidden",
+        )
+
         active_job = {"job": None}
 
         def generate_here(file_path, state, progress=gr.Progress(track_tqdm=False)):
@@ -1336,8 +1879,297 @@ class PromptManagerPlugin(WAN2GPPlugin):
                 roots.append(path)
         return roots
 
+    def remove_custom_folder(
+        self,
+        current_state,
+        current_dir,
+        file_cache,
+        filter_model,
+        filter_media,
+        filter_period,
+        view_mode,
+        search_query,
+        sort_by,
+        grid_size,
+    ):
+        add_folder_outputs = [
+            self.grid_html,
+            self.selected_file,
+            self.selected_files,
+            self.metadata_html,
+            self.preview_row,
+            self.video_preview,
+            self.image_preview,
+            self.use_all_btn,
+            self.current_dir,
+            self.file_cache,
+            self.filter_model,
+            self.filter_count,
+            self.bulk_row,
+            self.bulk_count,
+            self.view_mode,
+            self.add_folder_input,
+        ]
+
+        if not self.custom_folders:
+            gr.Warning("No custom folders registered to remove.")
+            res = {comp: gr.update() for comp in add_folder_outputs}
+            res[self.add_folder_input] = ""
+            return res
+
+        target_folder = ""
+        if view_mode in self.custom_folders:
+            try:
+                import tkinter as tk
+                from tkinter import messagebox
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes("-topmost", True)
+                confirm = messagebox.askyesno(
+                    title="Remove Custom Folder",
+                    message=f"Are you sure you want to remove this custom folder from Prompt Manager?\n\n{view_mode}\n\n(This will not delete the files on disk.)",
+                    parent=root
+                )
+                root.destroy()
+                if confirm:
+                    target_folder = view_mode
+            except Exception as e:
+                print(f"Error showing confirmation dialog: {e}")
+                target_folder = view_mode
+        else:
+            try:
+                import tkinter as tk
+                from tkinter import simpledialog
+                
+                msg = "Enter the number of the custom folder you want to remove:\n\n"
+                for idx, path in enumerate(self.custom_folders):
+                    msg += f"{idx + 1}. {path}\n"
+                
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes("-topmost", True)
+                ans = simpledialog.askstring(
+                    title="Remove Custom Folder",
+                    prompt=msg,
+                    parent=root
+                )
+                root.destroy()
+                
+                if ans and ans.strip().isdigit():
+                    num = int(ans.strip()) - 1
+                    if 0 <= num < len(self.custom_folders):
+                        target_folder = self.custom_folders[num]
+                    else:
+                        gr.Warning("Invalid folder selection number.")
+            except Exception as e:
+                print(f"Error showing folder choice dialog: {e}")
+                gr.Warning("Could not show folder removal dialog.")
+
+        if not target_folder:
+            res = {comp: gr.update() for comp in add_folder_outputs}
+            res[self.add_folder_input] = ""
+            return res
+
+        if target_folder in self.custom_folders:
+            self.custom_folders.remove(target_folder)
+            self.save_custom_folders()
+            gr.Info(f"Removed custom folder: {target_folder}")
+
+        new_choices = self.get_view_mode_choices()
+        
+        next_view = VIEW_OUTPUTS if view_mode == target_folder else view_mode
+        if next_view == "All Folders" and not self.custom_folders:
+            next_view = VIEW_OUTPUTS
+        if next_view not in new_choices:
+            next_view = VIEW_OUTPUTS
+
+        updates = self.list_media_files(
+            current_state,
+            current_dir="" if next_view != view_mode else current_dir,
+            file_cache="",
+            filter_model=filter_model,
+            filter_media=filter_media,
+            filter_period=filter_period,
+            view_mode=next_view,
+            search_query=search_query,
+            sort_by=sort_by,
+            grid_size=grid_size,
+            rescan=True,
+        )
+
+        updates[self.view_mode] = gr.Dropdown(choices=new_choices, value=next_view)
+        updates[self.add_folder_input] = ""
+
+        return updates
+
+    def browse_custom_folder(
+        self,
+        current_state,
+        current_dir,
+        file_cache,
+        filter_model,
+        filter_media,
+        filter_period,
+        view_mode,
+        search_query,
+        sort_by,
+        grid_size,
+    ):
+        folder_path = ""
+        zenity_success = False
+        try:
+            import subprocess
+            # Try to run zenity for native folder selection dialog
+            res = subprocess.run(
+                ["zenity", "--file-selection", "--directory", "--title=Select Custom Folder to Add"],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            if res.returncode == 0:
+                folder_path = res.stdout.strip()
+                zenity_success = True
+            elif res.returncode == 1:
+                # Dialog was explicitly cancelled by the user
+                folder_path = ""
+                zenity_success = True
+        except Exception as e:
+            print(f"Zenity folder dialog failed or is not available: {e}")
+
+        # Fallback to tkinter if zenity was not executed or failed
+        if not zenity_success:
+            try:
+                import tkinter as tk
+                from tkinter import filedialog
+                
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes("-topmost", True)
+                
+                folder_path = filedialog.askdirectory(
+                    parent=root,
+                    title="Select Custom Folder to Add"
+                )
+                root.destroy()
+            except Exception as e:
+                print(f"Error opening tkinter folder dialog: {e}")
+                gr.Warning("Could not open system file dialog. Please verify GUI/display settings.")
+            
+        folder_path = (folder_path or "").strip()
+        if not folder_path:
+            add_folder_outputs = [
+                self.grid_html,
+                self.selected_file,
+                self.selected_files,
+                self.metadata_html,
+                self.preview_row,
+                self.video_preview,
+                self.image_preview,
+                self.use_all_btn,
+                self.current_dir,
+                self.file_cache,
+                self.filter_model,
+                self.filter_count,
+                self.bulk_row,
+                self.bulk_count,
+                self.view_mode,
+                self.add_folder_input,
+            ]
+            res = {comp: gr.update() for comp in add_folder_outputs}
+            res[self.add_folder_input] = ""
+            return res
+            
+        return self.add_custom_folder(
+            folder_path,
+            current_state,
+            current_dir,
+            file_cache,
+            filter_model,
+            filter_media,
+            filter_period,
+            view_mode,
+            search_query,
+            sort_by,
+            grid_size,
+        )
+
+    def add_custom_folder(
+        self,
+        folder_path,
+        current_state,
+        current_dir,
+        file_cache,
+        filter_model,
+        filter_media,
+        filter_period,
+        view_mode,
+        search_query,
+        sort_by,
+        grid_size,
+    ):
+        folder_path = (folder_path or "").strip()
+        add_folder_outputs = [
+            self.grid_html,
+            self.selected_file,
+            self.selected_files,
+            self.metadata_html,
+            self.preview_row,
+            self.video_preview,
+            self.image_preview,
+            self.use_all_btn,
+            self.current_dir,
+            self.file_cache,
+            self.filter_model,
+            self.filter_count,
+            self.bulk_row,
+            self.bulk_count,
+            self.view_mode,
+            self.add_folder_input,
+        ]
+
+        if not folder_path:
+            res = {comp: gr.update() for comp in add_folder_outputs}
+            res[self.add_folder_input] = ""
+            return res
+
+        if not os.path.isdir(folder_path):
+            gr.Warning(f"The path '{folder_path}' is not a valid directory.")
+            res = {comp: gr.update() for comp in add_folder_outputs}
+            res[self.add_folder_input] = ""
+            return res
+
+        abs_path = os.path.abspath(folder_path)
+        if abs_path not in self.custom_folders:
+            self.custom_folders.append(abs_path)
+            self.save_custom_folders()
+            gr.Info(f"Added custom folder: {abs_path}")
+
+        new_choices = self.get_view_mode_choices()
+
+        updates = self.list_media_files(
+            current_state,
+            current_dir="",
+            file_cache="",
+            filter_model=filter_model,
+            filter_media=filter_media,
+            filter_period=filter_period,
+            view_mode=abs_path,
+            search_query=search_query,
+            sort_by=sort_by,
+            grid_size=grid_size,
+            rescan=True,
+        )
+
+        updates[self.view_mode] = gr.Dropdown(choices=new_choices, value=abs_path)
+        updates[self.add_folder_input] = ""
+
+        return updates
+
     def _resolve_outputs_folder_to_open(self, current_dir=""):
         roots = self._output_roots()
+        for path in self.custom_folders:
+            if os.path.isdir(path) and path not in roots:
+                roots.append(path)
         cur = (current_dir or "").strip()
         if cur:
             cur_abs = os.path.abspath(cur)
@@ -1448,8 +2280,9 @@ class PromptManagerPlugin(WAN2GPPlugin):
     def _library_entries_as_grid(self):
         return [library_entry_to_grid_entry(entry) for entry in self._get_library_entries()]
 
-    def _scan_media_entries(self, state, current_dir=""):
-        roots = self._output_roots()
+    def _scan_media_entries(self, state, current_dir="", roots=None):
+        if roots is None:
+            roots = self._output_roots()
         cur = (current_dir or "").strip()
         cur_abs = os.path.abspath(cur) if cur else ""
 
@@ -1700,8 +2533,9 @@ class PromptManagerPlugin(WAN2GPPlugin):
         file_entries = []
         cur_abs = ""
 
+        roots = self._resolve_roots_for_view(view_mode)
         if rescan or not (file_cache or "").strip():
-            folder_items, file_entries, cur_abs = self._scan_media_entries(current_state, current_dir)
+            folder_items, file_entries, cur_abs = self._scan_media_entries(current_state, current_dir, roots)
             cache_json = json.dumps(
                 {"folders": folder_items, "files": file_entries, "dir": cur_abs},
                 ensure_ascii=False,
